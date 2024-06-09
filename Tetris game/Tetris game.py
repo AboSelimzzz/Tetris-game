@@ -4,23 +4,34 @@ import random
 import numpy as np
 
 
-def down_pressed(x_pos, y_pos):
-    while True:
-        new_x = (x_pos - start_x) % width
-        new_y = (y_pos + height - start_y) % height
-        if y_pos + height > last_y or board[new_x, new_y + 1] == 1:
-            board[new_x, new_y] = 1
-            y_pos += height
-            break
-        y_pos += height
-    return y_pos
+def check_events(x_pos, y_pos, sc, piece):
+    r = True
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            r = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                if y_pos + (len(piece[0]) - 1) * height < last_y:
+                    y_pos += 20
+                    sc += 1
+            if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                if x_pos > start_x:
+                    if board[xx - 1, yy] == 0:
+                        x_pos -= width
+            if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                if calc_max_x(piece, x_pos) <= last_x:
+                    if board[xx + 1, yy] == 0:
+                        x_pos += width
+            if event.key == pygame.K_SPACE and rand != 2:
+                piece = np.rot90(piece[0], 1, (1, 0)), piece[1]
+    return r, x_pos, y_pos, sc, piece
 
 
 def check_done_rows(matrix, sc, lev):
     trans_board = np.transpose(matrix)
-    index = [i for i in range(matrix.shape[0]) if np.all(trans_board[i] == 1)]
-    for i in reversed(index):
-        trans_board = np.delete(trans_board, i, axis=0)
+    index = [ii for ii in range(matrix.shape[0]) if np.all(trans_board[ii] == 1)]
+    for ii in reversed(index):
+        trans_board = np.delete(trans_board, ii, axis=0)
         trans_board = np.vstack((np.zeros(matrix.shape[1]), trans_board))
     if index:
         sc += 100
@@ -37,28 +48,91 @@ def check_done_rows(matrix, sc, lev):
 
 
 def draw_tetris_board():
-    for i in range(10):
-        for j in range(10):
-            if board[i][j] == 1:
-                pygame.draw.rect(window, color_board[i][j],
-                                 (start_x + (i * width), start_y + (j * height), width, height))
+    for ii in range(10):
+        for jj in range(10):
+            if board[ii][jj] == 1:
+                pygame.draw.rect(window, color_board[ii][jj],
+                                 (start_x + (ii * width), start_y + (jj * height), width, height))
 
 
 def draw_piece(piece, x_pos, y_pos):
     shape, color = piece
-    for i in shape[0]:
-        for j in shape[1]:
-            pygame.draw.rect(window, color, (x_pos, y_pos, width, height))
+    x_temp = x_pos
+    for ii in shape:
+        for jj in ii:
+            if jj:
+                pygame.draw.rect(window, color, (x_pos, y_pos, width, height))
+            x_pos += width
+        y_pos += height
+        x_pos = x_temp
+
+
+def drawing_stuff():
+    line_board = font.render("lines: " + str(levels), True, "green")
+    score_board = font.render("Score: " + str(scores), True, "green")
+    line_rect = line_board.get_rect()
+    score_rect = score_board.get_rect()
+    line_rect.center = (500, 650)
+    score_rect.center = (150, 650)
+    window.blit(line_board, line_rect)
+    window.blit(score_board, score_rect)
+    draw_tetris_board()
+    draw_piece(current_one, x, y)
+    pygame.draw.lines(window, (255, 0, 0), False,
+                      [(start_x - 5, start_y), (start_x - 5, last_y + width + 5),
+                       (585, last_y + width + 5), (585, start_y)], 5)
+
+
+def calc_max_x(piece, x_pos):
+    shape, _ = piece
+    max_x = x_temp = x_pos
+    for ii in shape:
+        done = False
+        for jj in ii:
+            if not done or (jj and done):
+                x_pos += width
+                if jj:
+                    done = True
+            if not jj and done:
+                break
+        max_x = max(max_x, x_pos)
+        x_pos = x_temp
+    return max_x
+
+
+def calc_max_y(piece, y_pos):
+    return y_pos + (len(piece[0]) - 1) * height
+
+
+def calc_xx_yy(x_pos, y_pos):
+    return int((x_pos - start_x) / width), round((int(y_pos) - start_y) / height)
+
+
+def save_piece(piece, x_ind, y_ind, y_pos):
+    shape, color = piece
+    y_max = y_pos + (len(shape) - 1) * height
+    temp_xx = x_ind
+    _, max_yy = calc_xx_yy(0, y_max)
+    for i in current_one[0]:
+        for j in i:
+            if j:
+                board[x_ind, y_ind] = 1
+                color_board[x_ind, y_ind] = current_one[1]
+            x_ind += 1
+        y_ind += 1
+        x_ind = temp_xx
 
 
 SHAPES = [
-    np.array([[1, 1, 1], [0, 1, 0]]),   # T
+    np.array([[0, 1, 0], [1, 1, 1]]),   # T
     np.array([[1, 1, 1, 1]]),   # I
     np.array([[1, 1], [1, 1]]),   # o
     np.array([[0, 1, 1], [1, 1, 0]]),   # S
-    np.array([[1, 1, 0], [0, 1, 1]])   # z
+    np.array([[1, 1, 0], [0, 1, 1]]),   # z
+    np.array([[0, 0, 1], [1, 1, 1]]),   # L
+    np.array([[1, 0, 0], [1, 1, 1]]),   # mirror of L
 ]
-COLORS = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 255, 255), (255, 255, 0)]
+COLORS = [(128, 0, 128), (0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0), (255, 130, 0), (0, 0, 255)]
 scores = 0
 levels = 0
 board = np.zeros((10, 10), dtype=int)
@@ -76,49 +150,27 @@ last_y = 554
 width = height = 46
 y = 100.0
 x = start_x + width * 4
-current_one = (random.choice(SHAPES), random.choice(COLORS))
+rand = random.randint(0, 6)
+current_one = (SHAPES[rand], COLORS[rand])
+clock = pygame.time.Clock()
 while running:
-    xx = int((x - start_x) / width)
-    yy = round((int(y) - start_y) / height)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_DOWN:
-                if y < last_y:
-                    y += 10  # down_pressed(x, y)
-                    scores += 1
-            if event.key == pygame.K_LEFT:
-                if x > start_x:
-                    if board[xx - 1, yy] == 0:
-                        x -= width
-            if event.key == pygame.K_RIGHT:
-                if x < last_x:
-                    if board[xx + 1, yy] == 0:
-                        x += width
-    y += 0.1
-    if y >= last_y or (0 <= yy < 9 and board[xx][yy + 1] == 1):
-        board[xx][yy] = 1
-        color_board[xx][yy] = current_one[1]
+    xx, yy = calc_xx_yy(x, y)
+    max_y = calc_max_y(current_one, yy)
+    running, x, y, scores, current_one = check_events(x, y, scores, current_one)
+    
+    y += 1
+    if y + (len(current_one[0]) - 1) * height >= last_y or (0 <= yy < 9 and board[xx][yy + 1] == 1):
+        save_piece(current_one, xx, yy, y)
         y = 100
         x = start_x + width * 4
         scores += 5
-        current_one = (random.choice(SHAPES), random.choice(COLORS))
+        rand = random.randint(0, 6)
+        rotation = 0
+        current_one = [SHAPES[rand], COLORS[rand]]
 
     board, scores, levels = check_done_rows(board, scores, levels)
     window.fill((0, 0, 0))
-    line_board = font.render("lines: " + str(levels), True, "green")
-    score_board = font.render("Score: " + str(scores), True, "green")
-    line_rect = line_board.get_rect()
-    score_rect = score_board.get_rect()
-    line_rect.center = (500, 650)
-    score_rect.center = (150, 650)
-    window.blit(line_board, line_rect)
-    window.blit(score_board, score_rect)
-    draw_tetris_board()
-    pygame.draw.rect(window, current_one[1], (x, y, width, height))
-    pygame.draw.lines(window, (255, 0, 0), False,
-                      [(start_x - 5, start_y), (start_x - 5, last_y + width + 5),
-                       (585, last_y + width + 5), (585, start_y)], 5)
+    drawing_stuff()
     pygame.display.update()
+    clock.tick(60)
 pygame.quit()
