@@ -4,6 +4,47 @@ import random
 import numpy as np
 
 
+def check_left_collision(x_ind, y_ind, piece):
+    coll = False
+    shape, _ = piece
+    max_xs = []
+    x_temp = x_ind
+    for i in shape:
+        done = False
+        x_ind = x_temp
+        for j in i:
+            if not done or (j and done):
+                x_ind += 1
+                if j:
+                    done = True
+            if not j and done:
+                break
+        max_xs.append(x_ind)
+    for max_x in max_xs:
+        if board[max_x, y_ind]:
+            coll = True
+            break
+    return coll
+
+
+def check_collision(x_ind, y_ind, piece):
+    coll = False
+    shape, _ = piece
+    x_temp = x_ind
+    for i in shape:
+        x_ind = x_temp
+        for j in i:
+            if j:
+                if 0 < y_ind < 9 and board[x_ind][y_ind + 1] == 1:
+                    coll = True
+                    break
+            x_ind += 1
+        if coll:
+            break
+        y_ind += 1
+    return coll
+
+
 def check_events(x_pos, y_pos, sc, piece):
     r = True
     for event in pygame.event.get():
@@ -20,7 +61,8 @@ def check_events(x_pos, y_pos, sc, piece):
                         x_pos -= width
             if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                 if calc_max_x(piece, x_pos) <= last_x:
-                    if board[xx + 1, yy] == 0:
+                    x_ind, y_ind = calc_xx_yy(x_pos, y_pos)
+                    if not check_left_collision(x_ind, y_ind, piece):
                         x_pos += width
             if event.key == pygame.K_SPACE and rand != 2:
                 piece = np.rot90(piece[0], 1, (1, 0)), piece[1]
@@ -86,14 +128,14 @@ def drawing_stuff():
 def calc_max_x(piece, x_pos):
     shape, _ = piece
     max_x = x_temp = x_pos
-    for ii in shape:
+    for i in shape:
         done = False
-        for jj in ii:
-            if not done or (jj and done):
+        for j in i:
+            if not done or (j and done):
                 x_pos += width
-                if jj:
+                if j:
                     done = True
-            if not jj and done:
+            if not j and done:
                 break
         max_x = max(max_x, x_pos)
         x_pos = x_temp
@@ -104,7 +146,7 @@ def calc_max_y(piece, y_pos):
     return y_pos + (len(piece[0]) - 1) * height
 
 
-def calc_xx_yy(x_pos, y_pos):
+def calc_xx_yy(x_pos, y_pos=0):
     return int((x_pos - start_x) / width), round((int(y_pos) - start_y) / height)
 
 
@@ -154,12 +196,13 @@ rand = random.randint(0, 6)
 current_one = (SHAPES[rand], COLORS[rand])
 clock = pygame.time.Clock()
 while running:
-    xx, yy = calc_xx_yy(x, y)
-    max_y = calc_max_y(current_one, yy)
-    running, x, y, scores, current_one = check_events(x, y, scores, current_one)
-    
-    y += 1
-    if y + (len(current_one[0]) - 1) * height >= last_y or (0 <= yy < 9 and board[xx][yy + 1] == 1):
+    xx, yy = calc_xx_yy(x, y)   # getting the index in the board
+    max_y = calc_max_y(current_one, y)   # getting the max y in the shape
+    running, x, y, scores, current_one = check_events(x, y, scores, current_one)   # the events
+
+    if not check_collision(xx, yy, current_one) and max_y < last_y:   # checking if the object collide with another one
+        y += 1
+    else:
         save_piece(current_one, xx, yy, y)
         y = 100
         x = start_x + width * 4
