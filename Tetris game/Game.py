@@ -1,14 +1,13 @@
-import pygame
-
 from Constants import *
-from Timer import Timer
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, get_next_shape, update_score):
         # surface
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_screen = pygame.display.get_surface()
+
+        self.get_next_shape = get_next_shape
 
         # sprites
         self.sprites = pygame.sprite.Group()
@@ -17,19 +16,38 @@ class Game:
         self.grid = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
 
         # shape
-        self.tetromino = Tetromino(random.choice(list(TETROMINOES.keys())), self.sprites, self.create_tet, self.grid)
+        self.tetromino = Tetromino(choice(list(TETROMINOES.keys())), self.sprites, self.create_tet, self.grid)
 
+        self.down_speed = UPDATE_TIMER_SPEED
+        self.down_speed_faster = self.down_speed * 0.3
+        self.pressed = False
         # timers
         self.Timers = {
-            'vertical': Timer(UPDATE_TIMER_SPEED, True, self.move_down),
+            'vertical': Timer(self.down_speed, True, self.move_down),
             'horizontal': Timer(UPDATE_TIMER_MOVE),
             'rotate': Timer(UPDATE_TOMER_ROTATE),
         }
         self.Timers['vertical'].activate()
 
+        self.lines = 0
+        self.level = 1
+        self.score = 0
+
+        self.update_score = update_score
+
+    def calculate_score(self, lines):
+        self.lines += lines
+        self.score = SCORE_DATA[lines] * self.level
+
+        if self.lines / 10 > self.level:
+            self.level += 1
+            self.down_speed *= 0.75
+            self.Timers['vertical'].duration = self.down_speed
+        self.update_score(self.lines, self.level, self.score)
+
     def create_tet(self):
         self.delete_rows()
-        self.tetromino = Tetromino(random.choice(list(TETROMINOES.keys())), self.sprites, self.create_tet, self.grid)
+        self.tetromino = Tetromino(self.get_next_shape(), self.sprites, self.create_tet, self.grid)
 
     def timer_update(self):
         for timer in self.Timers.values():
@@ -52,6 +70,13 @@ class Game:
             if keys[pygame.K_UP]:
                 self.tetromino.rotate()
                 self.Timers['rotate'].activate()
+        if not self.pressed and keys[pygame.K_DOWN]:
+            self.pressed = True
+            self.Timers['vertical'].duration = self.down_speed_faster
+
+        if self.pressed and not keys[pygame.K_DOWN]:
+            self.pressed = False
+            self.Timers['vertical'].duration = self.down_speed
 
     def delete_rows(self):
         del_rows = []
@@ -70,6 +95,7 @@ class Game:
             self.grid = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
             for block in self.sprites:
                 self.grid[int(block.pos.y)][int(block.pos.x)] = block
+            self.calculate_score(len(del_rows))
 
     def draw_grid(self):
         for col in range(COLUMNS):
@@ -145,7 +171,6 @@ class Tetromino:
 
             for i, block in enumerate(self.blocks):
                 block.pos = new_blocks_pos[i]
-
 
 
 class Block(pygame.sprite.Sprite):

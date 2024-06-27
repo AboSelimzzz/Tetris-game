@@ -1,5 +1,8 @@
 import pygame
-import random
+from Timer import Timer
+from os.path import join
+from pygame.image import load
+from random import choice
 
 # game sizes
 ROWS = 20
@@ -9,7 +12,7 @@ GAME_WIDTH, GAME_HEIGHT = COLUMNS * SIZE, ROWS * SIZE
 
 # preview and score part
 OTHER_BAR = 350
-SCORE_HEIGHT_FRACTION = 0.3
+SCORE_HEIGHT_FRACTION = 0.7
 PREVIEW_HEIGHT_FRACTION = 1 - SCORE_HEIGHT_FRACTION
 
 # window size
@@ -20,7 +23,7 @@ WINDOW_HEIGHT = GAME_HEIGHT + HEIGHT_PADDING * 2
 
 
 # Game constants
-UPDATE_TIMER_SPEED = 200
+UPDATE_TIMER_SPEED = 300
 UPDATE_TIMER_MOVE = UPDATE_TOMER_ROTATE = 200
 BLOCK_OFFSET = pygame.Vector2(COLUMNS // 2, -1)
 
@@ -66,3 +69,5 @@ TETROMINOES = {
     'J': {'shape': [(0, 0), (0, -1), (0, 1), (-1, 1)], 'color': BROWN},
     'L': {'shape': [(0, 0), (0, -1), (0, 1), (1, 1)], 'color': BLUE}
 }
+
+SCORE_DATA = {1: 40, 2: 100, 3: 300, 4: 1200}
