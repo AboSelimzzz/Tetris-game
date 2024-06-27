@@ -43,9 +43,14 @@ class Game:
             self.level += 1
             self.down_speed *= 0.75
             self.Timers['vertical'].duration = self.down_speed
-        self.update_score(self.lines, self.level, self.score)
+
+    def check_game_over(self):
+        for block in self.tetromino.blocks:
+            if block.pos.y < 0:
+                exit()
 
     def create_tet(self):
+        self.check_game_over()
         self.delete_rows()
         self.tetromino = Tetromino(self.get_next_shape(), self.sprites, self.create_tet, self.grid)
 
@@ -132,6 +137,9 @@ class Tetromino:
         self.blocks = [Block(group, pos, self.color) for pos in self.block_pos]
         self.grid = grid
 
+        self.music = pygame.mixer.Sound(join('music', 'landing.wav'))
+        self.music.set_volume(0.2)
+
     # collisions
     def next_move_horizontal_collide(self, direction):
         tmp = [block.horizontal_collide(block.pos.x + direction, self.grid) for block in self.blocks]
@@ -139,7 +147,10 @@ class Tetromino:
 
     def next_move_vertical_collide(self, direction):
         tmp = [block.vertical_collide(block.pos.y + direction, self.grid) for block in self.blocks]
-        return True if any(tmp) else False
+        if True in tmp:
+            self.music.play()
+            return True
+        return False
 
     # moving
     def move_down(self):
