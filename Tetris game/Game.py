@@ -35,6 +35,8 @@ class Game:
 
         self.update_score = update_score
 
+        self.game_over = False
+
     def calculate_score(self, lines):
         self.lines += lines
         self.score = SCORE_DATA[lines] * self.level
@@ -48,12 +50,13 @@ class Game:
     def check_game_over(self):
         for block in self.tetromino.blocks:
             if block.pos.y < 0:
-                exit()
+                self.game_over = True
 
     def create_tet(self):
         self.check_game_over()
-        self.delete_rows()
-        self.tetromino = Tetromino(self.get_next_shape(), self.sprites, self.create_tet, self.grid)
+        if not self.game_over:
+            self.delete_rows()
+            self.tetromino = Tetromino(self.get_next_shape(), self.sprites, self.create_tet, self.grid)
 
     def timer_update(self):
         for timer in self.Timers.values():
@@ -116,16 +119,19 @@ class Game:
 
     def run(self):
         self.surface.fill(BLACK)
-        # update
-        self.input()
-        self.timer_update()
-        self.sprites.update()
+        if self.game_over:
+            return self.score
+        else:
+            # update
+            self.input()
+            self.timer_update()
+            self.sprites.update()
 
-        # draw
-        self.sprites.draw(self.surface)
-        self.draw_grid()
+            # draw
+            self.sprites.draw(self.surface)
+            self.draw_grid()
+            self.display_screen.blit(self.surface, (WIDTH_PADDING, HEIGHT_PADDING))
 
-        self.display_screen.blit(self.surface, (WIDTH_PADDING, HEIGHT_PADDING))
 
 
 class Tetromino:
@@ -139,7 +145,7 @@ class Tetromino:
         self.grid = grid
 
         self.music = pygame.mixer.Sound(join('music', 'landing.wav'))
-        self.music.set_volume(0.6)
+        self.music.set_volume(0.07)
 
     # collisions
     def next_move_horizontal_collide(self, direction):

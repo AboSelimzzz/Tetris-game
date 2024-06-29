@@ -21,6 +21,7 @@ class Main:
         self.pause_circle = None
         self.home_circle = None
         self.continue_circle = None
+        self.end_score = None
 
     def get_next_shape(self):
         n = self.next_shape
@@ -77,6 +78,42 @@ class Main:
                         if self.home_circle.collidepoint(pos):
                             return False
 
+    def show_game_over(self):
+        self.music.stop()
+        font = pygame.font.Font(None, 100)
+        font.set_bold(True)
+        text = font.render("GAME OVER", True, BLACK)
+        w, h = text.get_size()
+        temp_surface = pygame.Surface((w + 20 * 40, h + 1 * 40))
+        temp_surface.fill(WHITE)
+        temp_surface.blit(text, (400, 20))
+        rect = text.get_rect(center=(0, WINDOW_HEIGHT / 2))
+        self.display_screen.blit(temp_surface, rect)
+        pygame.display.flip()
+
+    def write_score(self, line):
+        with open("highscores.txt", "r") as file:
+            lines = file.readlines()
+        if line == 0:
+            lines.append(str(self.end_score) + '\n')
+        else:
+            lines.insert(line, str(self.end_score) + '\n')
+        with open("highscores.txt", "w") as file:
+            file.truncate(0)
+            file.writelines(lines)
+
+    def check_high_score(self):
+        with open('highscores.txt', 'r') as file:
+            lines = file.readline()
+            if len(lines) == 0:
+                self.write_score(0)
+                return
+            else:
+                for i, line in enumerate(lines):
+                    if int(line) <= self.end_score:
+                        self.write_score(i)
+                        return
+
     def run(self):
         self.display_options()
         running = True
@@ -91,14 +128,18 @@ class Main:
                         running = False
                         self.music.stop()
                         break
-                    if self.pause_circle.collidepoint(pos):
+                    if self.pause_circle.collidepoint(pos) and self.end_score is None:
                         running = self.pause_game()
                         if not running:
                             self.music.stop()
                             break
 
-            self.game.run()
-            self.score.run()
-            self.preview.run(self.next_shape)
-            self.display_screen.blit(self.display_screen, self.rect)
-            pygame.display.flip()
+            self.end_score = self.game.run()
+            if self.end_score is None:
+                self.preview.run(self.next_shape)
+                self.score.run()
+                self.display_screen.blit(self.display_screen, self.rect)
+                pygame.display.flip()
+            else:
+                self.show_game_over()
+                self.check_high_score()
