@@ -43,6 +43,7 @@ class Game:
             self.level += 1
             self.down_speed *= 0.75
             self.Timers['vertical'].duration = self.down_speed
+        self.update_score(self.lines, self.level, self.score)
 
     def check_game_over(self):
         for block in self.tetromino.blocks:
@@ -138,7 +139,7 @@ class Tetromino:
         self.grid = grid
 
         self.music = pygame.mixer.Sound(join('music', 'landing.wav'))
-        self.music.set_volume(0.2)
+        self.music.set_volume(0.6)
 
     # collisions
     def next_move_horizontal_collide(self, direction):

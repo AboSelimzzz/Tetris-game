@@ -3,6 +3,7 @@ from Timer import Timer
 from os.path import join
 from pygame.image import load
 from random import choice
+import math
 
 # game sizes
 ROWS = 20
