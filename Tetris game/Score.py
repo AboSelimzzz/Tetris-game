@@ -9,11 +9,12 @@ class Score:
 
         self.font = pygame.font.Font(join('font', 'font.ttf'), 30)
 
-        self.inc_height = self.surface.get_height() / 3
+        self.inc_height = self.surface.get_height() / 4
 
         self.lines = 0
         self.score = 0
         self.level = 1
+        self.high_score = int(open('highscores.txt', 'r').readline())
 
     def display_text(self, pos, text):
         text_surface = self.font.render(f'{text[0]}: {text[1]}', True, GREEN)
@@ -22,7 +23,7 @@ class Score:
 
     def run(self):
         self.surface.fill(GRAY)
-        for i, text in enumerate([('Score', self.score), ('level', self.level), ('lines', self.lines)]):
+        for i, text in enumerate([('HighScore', self.high_score), ('Score', self.score), ('level', self.level), ('lines', self.lines)]):
             x = self.surface.get_width() / 2
             y = i * self.inc_height + self.inc_height / 2
             self.display_text((x, y), text)

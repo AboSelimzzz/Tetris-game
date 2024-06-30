@@ -39,7 +39,7 @@ class Game:
 
     def calculate_score(self, lines):
         self.lines += lines
-        self.score = SCORE_DATA[lines] * self.level
+        self.score += SCORE_DATA[lines] * self.level
 
         if self.lines / 10 > self.level:
             self.level += 1

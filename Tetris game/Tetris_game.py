@@ -6,6 +6,22 @@ from Score import Score
 from Preview import Preview
 
 
+def read_scores():
+    try:
+        with open('highscores.txt', 'r') as file:
+            return [int(line.strip()) for line in file]
+    except FileNotFoundError:
+        return []
+
+
+def write_score(score, scores):
+    scores.append(int(score))
+    scores.sort(reverse=True)
+    with open('highscores.txt', 'w') as file:
+        for s in scores:
+            file.write(f'{s}\n')
+
+
 class Main:
     def __init__(self):
         self.display_screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -90,29 +106,17 @@ class Main:
         rect = text.get_rect(center=(0, WINDOW_HEIGHT / 2))
         self.display_screen.blit(temp_surface, rect)
         pygame.display.flip()
-
-    def write_score(self, line):
-        with open("highscores.txt", "r") as file:
-            lines = file.readlines()
-        if line == 0:
-            lines.append(str(self.end_score) + '\n')
-        else:
-            lines.insert(line, str(self.end_score) + '\n')
-        with open("highscores.txt", "w") as file:
-            file.truncate(0)
-            file.writelines(lines)
-
-    def check_high_score(self):
-        with open('highscores.txt', 'r') as file:
-            lines = file.readline()
-            if len(lines) == 0:
-                self.write_score(0)
-                return
-            else:
-                for i, line in enumerate(lines):
-                    if int(line) <= self.end_score:
-                        self.write_score(i)
-                        return
+        write_score(self.end_score, read_scores())
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        pos = pygame.mouse.get_pos()
+                        if self.home_circle.collidepoint(pos):
+                            return False
 
     def run(self):
         self.display_options()
@@ -141,5 +145,4 @@ class Main:
                 self.display_screen.blit(self.display_screen, self.rect)
                 pygame.display.flip()
             else:
-                self.show_game_over()
-                self.check_high_score()
+                running = self.show_game_over()
