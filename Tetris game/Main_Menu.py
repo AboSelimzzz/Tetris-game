@@ -32,17 +32,31 @@ class MainMenu:
             self.screen.blit(text_surface, text_rect)
 
     def draw_grid(self):
-        pygame.draw.lines(self.screen, WHITE, True, [(50, 20), (50, 500), (400, 500), (400, 20)])
+        text = self.score_font.render('HIGH SCORES', True, GREEN)
+        rect = text.get_rect(center=(363, 100))
+        self.screen.blit(text, rect)
+        for i in range(7):
+            pygame.draw.line(self.screen, WHITE, (25, i * 100 + 50), (750, i * 100 + 50), 5)
+        pygame.draw.line(self.screen, WHITE, (400, 150), (400, 650), 5)
+        for i in range(2):
+            pygame.draw.line(self.screen, WHITE, (25 + i * 725, 50), (25 + i * 725, 650), 5)
+
         pygame.display.update()
 
     def show_high(self):
         self.screen.fill(BLACK)
         self.draw_grid()
+
         with open('highscores.txt', 'r') as file:
             for i in range(10):
                 line = file.readline()
                 text = self.score_font.render(f'{i + 1}-  ' + str(line[:-1]), True, GREEN)
-                self.screen.blit(text, (100, i * self.screen.get_height() / 10 + 25))
+                if i < 5:
+                    rect = text.get_rect(center=(182, i * 100 + 200))
+                    self.screen.blit(text, rect)
+                else:
+                    rect = text.get_rect(center=(557, (i - 5) * 100 + 200))
+                    self.screen.blit(text, rect)
                 pygame.display.update()
         while True:
             for event in pygame.event.get():
