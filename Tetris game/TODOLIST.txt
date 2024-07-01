@@ -1,0 +1,4 @@
+handling the high score text to be at most 10 lines only
+credits section
+mute option
+creating an option section
