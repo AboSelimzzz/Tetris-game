@@ -53,18 +53,9 @@ class Main:
         self.score.score = score
 
     def display_options(self):
-        pause_img = pygame.image.load(join('options', 'Pause.jpg')).convert_alpha()
-        home_img = pygame.image.load(join('options', 'Home.jpg')).convert_alpha()
-        sound_img = pygame.image.load(join('options', 'Sound.jpg')).convert_alpha()
-        mute_img = pygame.image.load(join('options', 'Mute.jpg')).convert_alpha()
-
-        images = [pause_img, sound_img, home_img]
         names = ['Pause.jpg', 'Sound.jpg', 'Home.jpg']
         if self.muted:
-            images[1] = mute_img
             names[1] = 'Mute.jpg'
-
-
 
         for i, name in enumerate(names):
             x = GAME_WIDTH + 3 * WIDTH_PADDING + i * OTHER_BAR / 3
@@ -78,6 +69,7 @@ class Main:
             elif i == 2:
                 self.home_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
             self.show_pic(['options', name], x, y)
+
     def pause_game(self):
         self.show_pic(['options', 'Continue.jpg'],
                       GAME_WIDTH + 3 * WIDTH_PADDING,

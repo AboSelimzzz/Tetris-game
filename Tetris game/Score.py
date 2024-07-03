@@ -23,7 +23,8 @@ class Score:
 
     def run(self):
         self.surface.fill(GRAY)
-        for i, text in enumerate([('HighScore', self.high_score), ('Score', self.score), ('level', self.level), ('lines', self.lines)]):
+        texts = [('HighScore', self.high_score), ('Score', self.score), ('level', self.level), ('lines', self.lines)]
+        for i, text in enumerate(texts):
             x = self.surface.get_width() / 2
             y = i * self.inc_height + self.inc_height / 2
             self.display_text((x, y), text)

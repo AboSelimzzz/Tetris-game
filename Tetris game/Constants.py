@@ -5,6 +5,7 @@ from pygame.image import load
 from random import choice
 import math
 
+
 # game sizes
 ROWS = 20
 COLUMNS = 10
