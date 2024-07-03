@@ -64,6 +64,20 @@ class MainMenu:
                     pygame.quit()
                     exit()
 
+    def credits_section(self):
+        self.screen.fill(BLACK)
+        texts = ['Welcome to Tetris Game!', 'Mina Selim', '02/07/2024', 'Python Project', 'Pygame framework']
+        for i, text in enumerate(texts):
+            text = self.font.render(text, True, WHITE)
+            rect = text.get_rect(topleft=(200, 50 + i * 100))
+            self.screen.blit(text, rect)
+        pygame.display.update()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
     def run(self):
         while True:
             for event in pygame.event.get():
@@ -80,6 +94,8 @@ class MainMenu:
                             exit()
                         if self.high_rect.collidepoint(pos):
                             self.show_high()
+                        if self.credit_rect.collidepoint(pos):
+                            self.credits_section()
             self.screen.fill(BLACK)
             self.display_text()
             pygame.display.flip()

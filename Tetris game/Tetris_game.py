@@ -1,5 +1,3 @@
-import pygame
-
 from Constants import *
 from Game import Game
 from Score import Score
@@ -9,7 +7,10 @@ from Preview import Preview
 def read_scores():
     try:
         with open('highscores.txt', 'r') as file:
-            return [int(line.strip()) for line in file]
+            lines = []
+            for _ in range(10):
+                lines += file.readline()
+            return lines
     except FileNotFoundError:
         return []
 
@@ -34,10 +35,12 @@ class Main:
         self.music = pygame.mixer.Sound(join('music', 'music.wav'))
         self.music.set_volume(0.05)
         self.music.play(-1)
-        self.pause_circle = None
         self.home_circle = None
         self.continue_circle = None
+        self.sound_circle = None
         self.end_score = None
+        self.muted = False
+        self.display_options()
 
     def get_next_shape(self):
         n = self.next_shape
@@ -52,34 +55,31 @@ class Main:
     def display_options(self):
         pause_img = pygame.image.load(join('options', 'Pause.jpg')).convert_alpha()
         home_img = pygame.image.load(join('options', 'Home.jpg')).convert_alpha()
+        sound_img = pygame.image.load(join('options', 'Sound.jpg')).convert_alpha()
 
-        images = [pause_img, home_img]
+        images = [pause_img, sound_img, home_img]
 
         for i, img in enumerate(images):
-            x = GAME_WIDTH + 6 * WIDTH_PADDING + i * OTHER_BAR / 2
+            x = GAME_WIDTH + 3 * WIDTH_PADDING + i * OTHER_BAR / 3
             y = HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2
             img = pygame.transform.scale(img, (40, 40))
             img_rect = img.get_rect(center=(x, y))
             r = math.sqrt(img_rect.width ** 2 + img_rect.height ** 2) / 2
-            if i == 1:
-                self.home_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
-            elif i == 0:
+            if i == 0:
                 self.continue_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
-                self.pause_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
+            elif i == 1:
+                self.sound_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
+            elif i == 2:
+                self.home_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
             else:
                 break
             self.display_screen.blit(img, img_rect)
             pygame.display.flip()
 
     def pause_game(self):
-        continue_img = load(join('options', 'Continue.jpg')).convert_alpha()
-        img = pygame.transform.scale(continue_img, (40, 40))
-        x = GAME_WIDTH + 6 * WIDTH_PADDING
-        y = HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2
-        img_rect = img.get_rect(center=(x, y))
-        r = math.sqrt(img_rect.width ** 2 + img_rect.height ** 2) / 2
-        self.display_screen.blit(img, img_rect)
-        pygame.display.flip()
+        self.show_pic(['options', 'Continue.jpg'],
+                      GAME_WIDTH + 3 * WIDTH_PADDING,
+                      HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -93,6 +93,33 @@ class Main:
                             return True
                         if self.home_circle.collidepoint(pos):
                             return False
+                        if self.sound_circle.collidepoint(pos):
+                            if not self.muted:
+                                self.mute_sound()
+                            else:
+                                self.make_sound()
+
+    def show_pic(self, path, x, y):
+        img = pygame.image.load(join(path[0], path[1])).convert_alpha()
+        img = pygame.transform.scale(img, (40, 40))
+        img_rect = img.get_rect(center=(x, y))
+        self.display_screen.blit(img, img_rect)
+        pygame.display.flip()
+
+    def make_sound(self):
+        self.music.play(-1)
+        self.game.tetromino.music.set_volume(0.07)
+        self.show_pic(['options', 'Sound.jpg'], GAME_WIDTH + 3 * WIDTH_PADDING + OTHER_BAR / 3,
+                      HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2)
+        self.muted = False
+
+    def mute_sound(self):
+        self.music.stop()
+        self.game.tetromino.music.set_volume(0)
+        self.show_pic(['options', 'Mute.jpg'],
+                      GAME_WIDTH + 3 * WIDTH_PADDING + OTHER_BAR / 3,
+                      HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2)
+        self.muted = True
 
     def show_game_over(self):
         self.music.stop()
@@ -119,7 +146,6 @@ class Main:
                             return False
 
     def run(self):
-        self.display_options()
         running = True
         while running:
             for event in pygame.event.get():
@@ -132,11 +158,16 @@ class Main:
                         running = False
                         self.music.stop()
                         break
-                    if self.pause_circle.collidepoint(pos) and self.end_score is None:
+                    if self.continue_circle.collidepoint(pos) and self.end_score is None:
                         running = self.pause_game()
                         if not running:
                             self.music.stop()
                             break
+                    if self.sound_circle.collidepoint(pos):
+                        if not self.muted:
+                            self.mute_sound()
+                        else:
+                            self.make_sound()
 
             self.end_score = self.game.run()
             if self.end_score is None:

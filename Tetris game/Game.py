@@ -14,7 +14,6 @@ class Game:
 
         # grid
         self.grid = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
-
         # shape
         self.tetromino = Tetromino(choice(list(TETROMINOES.keys())), self.sprites, self.create_tet, self.grid)
 
@@ -133,7 +132,6 @@ class Game:
             self.display_screen.blit(self.surface, (WIDTH_PADDING, HEIGHT_PADDING))
 
 
-
 class Tetromino:
     def __init__(self, shape, group, create_tetromino, grid):
         self.block_pos = TETROMINOES[shape]['shape']
@@ -143,7 +141,6 @@ class Tetromino:
         # blocks that made the shape
         self.blocks = [Block(group, pos, self.color) for pos in self.block_pos]
         self.grid = grid
-
         self.music = pygame.mixer.Sound(join('music', 'landing.wav'))
         self.music.set_volume(0.07)
 
