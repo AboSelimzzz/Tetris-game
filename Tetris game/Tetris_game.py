@@ -56,14 +56,20 @@ class Main:
         pause_img = pygame.image.load(join('options', 'Pause.jpg')).convert_alpha()
         home_img = pygame.image.load(join('options', 'Home.jpg')).convert_alpha()
         sound_img = pygame.image.load(join('options', 'Sound.jpg')).convert_alpha()
+        mute_img = pygame.image.load(join('options', 'Mute.jpg')).convert_alpha()
 
         images = [pause_img, sound_img, home_img]
+        names = ['Pause.jpg', 'Sound.jpg', 'Home.jpg']
+        if self.muted:
+            images[1] = mute_img
+            names[1] = 'Mute.jpg'
 
-        for i, img in enumerate(images):
+
+
+        for i, name in enumerate(names):
             x = GAME_WIDTH + 3 * WIDTH_PADDING + i * OTHER_BAR / 3
             y = HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2
-            img = pygame.transform.scale(img, (40, 40))
-            img_rect = img.get_rect(center=(x, y))
+            img_rect = self.show_pic(['options', name], x, y)
             r = math.sqrt(img_rect.width ** 2 + img_rect.height ** 2) / 2
             if i == 0:
                 self.continue_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
@@ -71,11 +77,7 @@ class Main:
                 self.sound_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
             elif i == 2:
                 self.home_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
-            else:
-                break
-            self.display_screen.blit(img, img_rect)
-            pygame.display.flip()
-
+            self.show_pic(['options', name], x, y)
     def pause_game(self):
         self.show_pic(['options', 'Continue.jpg'],
                       GAME_WIDTH + 3 * WIDTH_PADDING,
@@ -105,6 +107,7 @@ class Main:
         img_rect = img.get_rect(center=(x, y))
         self.display_screen.blit(img, img_rect)
         pygame.display.flip()
+        return img_rect
 
     def make_sound(self):
         self.music.play(-1)

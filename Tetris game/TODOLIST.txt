@@ -1,3 +1,2 @@
 reformat credits section
 creating an option section
-When pause and mute then continue it change also the icon of the sound
