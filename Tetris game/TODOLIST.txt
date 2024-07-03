@@ -1,2 +1,4 @@
 reformat credits section
 creating an option section
+mute option is not working right 100%
+back circle in sections

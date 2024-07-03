@@ -9,14 +9,18 @@ def read_scores():
         with open('highscores.txt', 'r') as file:
             lines = []
             for _ in range(10):
-                lines += file.readline()
+                line = file.readline()
+                if line:
+                    lines.append(int(line))
+                else:
+                    break
             return lines
     except FileNotFoundError:
         return []
 
 
 def write_score(score, scores):
-    scores.append(int(score))
+    scores.append(score)
     scores.sort(reverse=True)
     with open('highscores.txt', 'w') as file:
         for s in scores:
@@ -35,9 +39,11 @@ class Main:
         self.music = pygame.mixer.Sound(join('music', 'music.wav'))
         self.music.set_volume(0.05)
         self.music.play(-1)
-        self.home_circle = None
-        self.continue_circle = None
-        self.sound_circle = None
+        y = HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2
+        offset_x = GAME_WIDTH + 3 * WIDTH_PADDING
+        self.home_circle = pygame.draw.circle(self.display_screen, WHITE, (offset_x + 2 * OTHER_BAR / 3, y), 28)
+        self.continue_circle = pygame.draw.circle(self.display_screen, WHITE, (offset_x, y), 28)
+        self.sound_circle = pygame.draw.circle(self.display_screen, WHITE, (offset_x + OTHER_BAR / 3, y), 28)
         self.end_score = None
         self.muted = False
         self.display_options()
@@ -60,14 +66,6 @@ class Main:
         for i, name in enumerate(names):
             x = GAME_WIDTH + 3 * WIDTH_PADDING + i * OTHER_BAR / 3
             y = HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2
-            img_rect = self.show_pic(['options', name], x, y)
-            r = math.sqrt(img_rect.width ** 2 + img_rect.height ** 2) / 2
-            if i == 0:
-                self.continue_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
-            elif i == 1:
-                self.sound_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
-            elif i == 2:
-                self.home_circle = pygame.draw.circle(self.display_screen, WHITE, (int(x), int(y)), int(r))
             self.show_pic(['options', name], x, y)
 
     def pause_game(self):
@@ -99,7 +97,6 @@ class Main:
         img_rect = img.get_rect(center=(x, y))
         self.display_screen.blit(img, img_rect)
         pygame.display.flip()
-        return img_rect
 
     def make_sound(self):
         self.music.play(-1)
