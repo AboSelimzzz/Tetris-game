@@ -1,3 +1,5 @@
+import pygame
+
 from Constants import *
 from Game import Game
 from Score import Score
@@ -77,6 +79,10 @@ class Main:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.display_options()
+                        return True
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         pos = pygame.mouse.get_pos()
@@ -144,6 +150,12 @@ class Main:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = self.pause_game()
+                        if not running:
+                            self.music.stop()
+                            break
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
                     if self.home_circle.collidepoint(pos):

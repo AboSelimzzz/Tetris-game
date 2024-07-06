@@ -67,22 +67,22 @@ class Game:
     def input(self):
         keys = pygame.key.get_pressed()
         if not self.Timers['horizontal'].active:
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 self.tetromino.move_horizontal(-1)
                 self.Timers['horizontal'].activate()
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 self.Timers['horizontal'].activate()
                 self.tetromino.move_horizontal(1)
 
         if not self.Timers['rotate'].active:
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
                 self.tetromino.rotate()
                 self.Timers['rotate'].activate()
-        if not self.pressed and keys[pygame.K_DOWN]:
+        if not self.pressed and (keys[pygame.K_DOWN] or keys[pygame.K_s]):
             self.pressed = True
             self.Timers['vertical'].duration = self.down_speed_faster
 
-        if self.pressed and not keys[pygame.K_DOWN]:
+        if self.pressed and not (keys[pygame.K_DOWN] or keys[pygame.K_s]):
             self.pressed = False
             self.Timers['vertical'].duration = self.down_speed
 

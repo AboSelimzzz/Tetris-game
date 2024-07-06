@@ -2,6 +2,19 @@ from Constants import *
 from Tetris_game import Main
 
 
+def inputs(rect):
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    pos = pygame.mouse.get_pos()
+                    if rect.collidepoint(pos):
+                        return
+
+
 class MainMenu:
     def __init__(self):
         pygame.init()
@@ -43,6 +56,13 @@ class MainMenu:
 
         pygame.display.update()
 
+    def show_back_button(self):
+        home_img = load(join('options', 'Home.jpg')).convert_alpha()
+        home_img = pygame.transform.scale(home_img, (40, 40))
+        img_rect = home_img.get_rect(center=(25, 25))
+        self.screen.blit(home_img, img_rect)
+        return img_rect
+
     def show_high(self):
         self.screen.fill(BLACK)
         self.draw_grid()
@@ -57,12 +77,9 @@ class MainMenu:
                 else:
                     rect = text.get_rect(center=(557, (i - 5) * 100 + 200))
                     self.screen.blit(text, rect)
+                home_img = self.show_back_button()
                 pygame.display.update()
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+        inputs(home_img)
 
     def credits_section(self):
         self.screen.fill(BLACK)
@@ -71,12 +88,9 @@ class MainMenu:
             text = self.font.render(text, True, WHITE)
             rect = text.get_rect(topleft=(200, 50 + i * 100))
             self.screen.blit(text, rect)
+        img_rect = self.show_back_button()
         pygame.display.update()
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+        inputs(img_rect)
 
     def run(self):
         while True:
