@@ -26,7 +26,7 @@ class Score:
         texts = [('HighScore', self.high_score), ('Score', self.score), ('level', self.level), ('lines', self.lines)]
         for i, text in enumerate(texts):
             x = self.surface.get_width() / 2
-            y = i * self.inc_height + self.inc_height / 2
+            y = i * self.inc_height + self.inc_height / 2 + 20
             self.display_text((x, y), text)
 
         self.display_surface.blit(self.surface, self.rect)

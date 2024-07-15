@@ -45,7 +45,7 @@ class MainMenu:
             self.screen.blit(text_surface, text_rect)
 
     def draw_grid(self):
-        text = self.score_font.render('HIGH SCORES', True, GREEN)
+        text = self.font.render('HIGH SCORES', True, VIOLET)
         rect = text.get_rect(center=(363, 100))
         self.screen.blit(text, rect)
         for i in range(7):
@@ -70,11 +70,12 @@ class MainMenu:
         with open('highscores.txt', 'r') as file:
             for i in range(10):
                 line = file.readline()
-                text = self.score_font.render(f'{i + 1}-  ' + str(line[:-1]), True, GREEN)
                 if i < 5:
+                    text = self.font.render(f'{i + 1}-  ' + str(line[:-1]), True, GREEN)
                     rect = text.get_rect(center=(182, i * 100 + 200))
                     self.screen.blit(text, rect)
                 else:
+                    text = self.font.render(f'{i + 1}-  ' + str(line[:-1]), True, RED)
                     rect = text.get_rect(center=(557, (i - 5) * 100 + 200))
                     self.screen.blit(text, rect)
                 home_img = self.show_back_button()

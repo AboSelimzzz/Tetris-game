@@ -1,5 +1,3 @@
-import pygame
-
 from Constants import *
 from Game import Game
 from Score import Score
@@ -110,6 +108,7 @@ class Main:
         self.show_pic(['options', 'Sound.jpg'], GAME_WIDTH + 3 * WIDTH_PADDING + OTHER_BAR / 3,
                       HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2)
         self.muted = False
+        self.game.sound = True
 
     def mute_sound(self):
         self.music.stop()
@@ -118,6 +117,7 @@ class Main:
                       GAME_WIDTH + 3 * WIDTH_PADDING + OTHER_BAR / 3,
                       HEIGHT_PADDING + PREVIEW_HEIGHT_FRACTION * GAME_HEIGHT + HEIGHT_PADDING / 2)
         self.muted = True
+        self.game.sound = False
 
     def show_game_over(self):
         self.music.stop()
